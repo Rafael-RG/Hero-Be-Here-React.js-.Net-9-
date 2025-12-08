@@ -1,7 +1,10 @@
-import { Provider, ServiceItem } from '../types';
+import { Provider } from '../types';
 
-// La URL base de tus Azure Functions (local o nube)
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:7071/api';
+// En Vite usamos import.meta.env para variables de entorno
+// Si estamos en Azure Static Web Apps, la API suele estar en /api relativo si usamos Managed Functions
+// Si usamos una Function App separada, necesitamos la URL completa en la variable VITE_API_URL
+const env = (import.meta as any).env;
+const API_BASE_URL = env?.VITE_API_URL || (env?.DEV ? 'http://localhost:7071/api' : '/api');
 
 export const HeroApi = {
   // Obtener proveedores desde el backend real
