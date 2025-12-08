@@ -1,0 +1,8 @@
+{
+  "name": "Hero Be Here",
+  "description": "La superapp de servicios. Encuentra plomeros, electricistas, limpieza y más al instante, similar a pedir comida pero para solucionar tu vida.",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ]
+}
