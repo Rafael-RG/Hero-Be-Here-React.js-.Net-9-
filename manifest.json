@@ -1,0 +1,21 @@
+{
+  "short_name": "Hero",
+  "name": "Hero Be Here",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/8805/8805126.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/8805/8805126.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ec7000",
+  "background_color": "#ffffff",
+  "orientation": "portrait"
+}

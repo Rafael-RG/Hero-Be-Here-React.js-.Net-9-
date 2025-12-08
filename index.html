@@ -2,8 +2,20 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Hero Be Here</title>
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#ec7000" />
+    <meta name="description" content="Encuentra servicios profesionales cerca de ti al instante." />
+    
+    <!-- iOS Support -->
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/8805/8805126.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Hero Be Here" />
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -37,10 +49,20 @@
         -webkit-tap-highlight-color: transparent;
         background-color: #f8fafc;
         transition: background-color 0.3s ease, color 0.3s ease;
+        /* Prevent bounce on iOS */
+        overscroll-behavior-y: none;
       }
       /* Smooth transition for dark mode */
       html.dark body {
         background-color: #0f172a; /* Slate 900 */
+      }
+      
+      /* PWA Safe Area for iPhone X+ */
+      .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .pt-safe {
+        padding-top: env(safe-area-inset-top);
       }
     </style>
   <script type="importmap">
