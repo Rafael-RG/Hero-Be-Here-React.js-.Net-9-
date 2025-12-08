@@ -1,9 +1,18 @@
+
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Fix for Vite environment variables
+const apiKey = (import.meta as any).env.VITE_API_KEY || '';
+
+const ai = new GoogleGenAI({ apiKey });
 
 export const getServiceRecommendations = async (userQuery: string) => {
   try {
+    if (!apiKey) {
+      console.warn("Gemini API Key missing. Please set VITE_API_KEY in your .env file.");
+      return null;
+    }
+
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: `User Query: "${userQuery}"`,
@@ -33,8 +42,9 @@ export const getServiceRecommendations = async (userQuery: string) => {
 };
 
 export const chatWithConcierge = async (history: {role: string, parts: {text: string}[]}[], message: string) => {
-    // Basic chat interface for general questions
     try {
+        if (!apiKey) return "Error de configuración: Falta API Key.";
+
         const chat = ai.chats.create({
             model: 'gemini-2.5-flash',
             history: history,
