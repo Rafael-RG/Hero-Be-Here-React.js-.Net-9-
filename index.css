@@ -3,6 +3,11 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -15,5 +20,20 @@ body {
 
 html.dark body { background-color: #0f172a; }
 
-.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-.pt-safe { padding-top: env(safe-area-inset-top); }
+.pb-safe { padding-bottom: var(--safe-bottom, 20px); }
+.pt-safe { padding-top: var(--safe-top, 20px); }
+
+/* Animation Utilities */
+.animate-in {
+  animation-duration: 300ms;
+  animation-fill-mode: both;
+}
+.fade-in { animation-name: fadeIn; }
+.slide-in-from-bottom { animation-name: slideInFromBottom; }
+.slide-in-from-right { animation-name: slideInFromRight; }
+.zoom-in { animation-name: zoomIn; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideInFromBottom { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideInFromRight { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
