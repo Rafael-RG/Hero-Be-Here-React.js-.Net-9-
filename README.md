@@ -1,20 +1,19 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Hero Be Here - Configuración Local
 
-# Run and deploy your AI Studio app
+Si estás viendo errores como "Cannot find module 'tailwindcss'", sigue estos pasos:
 
-This contains everything you need to run your app locally.
+1.  Abre una terminal en la carpeta de este proyecto.
+2.  Ejecuta el siguiente comando para descargar las librerías necesarias:
+    ```bash
+    npm install
+    ```
+3.  Una vez termine, inicia el proyecto con:
+    ```bash
+    npm run dev
+    ```
 
-View your app in AI Studio: https://ai.studio/apps/drive/1kJnSXiOHdf-7wB1PKhv37B86i5xn6hnl
+## Solución de problemas
 
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Si el error persiste:
+1. Borra la carpeta `node_modules` y el archivo `package-lock.json`.
+2. Vuelve a ejecutar `npm install`.
