@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { MapPin, Bell, Search, Filter, ChevronLeft, Star, Clock, Heart, ShieldCheck, ChevronRight, X, Navigation, Target, CreditCard, History, Settings, HelpCircle, LogOut, Wallet, TrendingUp, Clock3, Briefcase, Check, ArrowRight, Mail, Lock, Eye, EyeOff, Trash2, CheckCheck, KeyRound, UserCircle, MousePointerClick, Moon, Sun, Loader2, Calendar, MessageCircle, CheckCircle2, DollarSign, Rocket, Store, Users, CalendarDays, Plus, Phone, BarChart3, PieChart, Edit, ListChecks, Power, BriefcaseBusiness, Globe, Shield, Smartphone, FileText } from 'lucide-react';
+import { MapPin, Bell, Search, Filter, ChevronLeft, Star, Clock, Heart, ShieldCheck, ChevronRight, X, Navigation, Target, CreditCard, History, Settings, HelpCircle, LogOut, Wallet, TrendingUp, Clock3, Briefcase, Check, ArrowRight, Mail, Lock, Eye, EyeOff, Trash2, CheckCheck, KeyRound, UserCircle, MousePointerClick, Moon, Sun, Loader2, Calendar, MessageCircle, CheckCircle2, DollarSign, Rocket, Store, Users, CalendarDays, Plus, Phone, BarChart3, PieChart, Edit, ListChecks, Power, BriefcaseBusiness, Globe, Shield, Smartphone, FileText, BadgeCheck, Sparkles } from 'lucide-react';
 import { CATEGORIES, PROVIDERS, PROMOS, RECENT_SEARCHES, POPULAR_TAGS, FLASH_DEALS, MOCK_NOTIFICATIONS } from './constants';
 import { Provider, AppNotification, ServiceItem, Employee, Schedule, LocationTarget } from './types';
 import { BottomNav } from './components/BottonNav';
@@ -29,6 +29,7 @@ const App = () => {
   // App State
   const [currentTab, setCurrentTab] = useState('home');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('all');
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -149,17 +150,37 @@ const App = () => {
   // Derived state for filtering
   const filteredProviders = useMemo(() => {
     return PROVIDERS.filter(p => {
+      // 1. Category Filter
       const matchesCategory = selectedCategory === 'all' || p.categoryId === selectedCategory;
+      
+      // 2. Search Text Filter
       const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             p.services.some(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchesCategory && matchesSearch;
+      
+      // 3. Subcategory Filter
+      let matchesSubcategory = true;
+      if (selectedCategory !== 'all' && selectedSubcategory !== 'all') {
+         // Basic matching logic: check if subcategory name appears in provider text or services
+         // We slice to avoid strict exact matches (e.g. "Plomería" vs "Plomero")
+         const term = selectedSubcategory.toLowerCase().slice(0, 4); 
+         matchesSubcategory = 
+            p.name.toLowerCase().includes(term) ||
+            p.description.toLowerCase().includes(term) ||
+            p.services.some(s => s.name.toLowerCase().includes(term));
+      }
+
+      return matchesCategory && matchesSearch && matchesSubcategory;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, selectedSubcategory, searchQuery]);
 
   // Derived state for carousels
   const topRatedProviders = useMemo(() => [...PROVIDERS].sort((a, b) => b.rating - a.rating).slice(0, 5), []);
   const nearProviders = useMemo(() => [...PROVIDERS].filter(p => p.distance.includes('km') && parseFloat(p.distance) < 4), []);
   const homeServiceProviders = useMemo(() => [...PROVIDERS].filter(p => p.categoryId === 'home'), []);
+  
+  // New Carousels
+  const newProviders = useMemo(() => [...PROVIDERS].reverse().slice(0, 5), []); // Simulate new arrivals
+  const verifiedProviders = useMemo(() => [...PROVIDERS].filter(p => p.verified), []);
 
   // Notifications Helpers
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -194,9 +215,14 @@ const App = () => {
     }
   };
 
-  const handleCategoryFromAI = (catId: string) => {
+  const handleCategorySelect = (catId: string) => {
     setSelectedCategory(catId);
-    setCurrentTab('home'); // Switch back to home to see results
+    setSelectedSubcategory('all'); // Reset subcategory when changing main category
+    setCurrentTab('home');
+  };
+
+  const handleCategoryFromAI = (catId: string) => {
+    handleCategorySelect(catId);
   };
 
   const openLocationMap = (target: LocationTarget) => {
@@ -1437,7 +1463,7 @@ const App = () => {
             return (
               <button 
                 key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
+                onClick={() => handleCategorySelect(cat.id)}
                 className={`flex flex-col items-center flex-shrink-0 space-y-2 group`}
               >
                 <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-200 ${isSelected ? 'bg-brand-600 text-white shadow-md scale-105' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 shadow-sm border border-gray-100 dark:border-gray-700'}`}>
@@ -1450,14 +1476,27 @@ const App = () => {
         </div>
       </div>
 
-      {/* Subcategories Chips (If category selected) */}
+      {/* Subcategories Chips (Interactive Filtering) */}
       {selectedCategory !== 'all' && (
         <div className="mt-2 px-4 flex gap-2 overflow-x-auto no-scrollbar">
-           {CATEGORIES.find(c => c.id === selectedCategory)?.subcategories?.map(sub => (
-              <button key={sub} className="px-3 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-xs font-medium whitespace-nowrap text-gray-600 dark:text-gray-300">
-                {sub}
-              </button>
-           ))}
+           <button 
+              onClick={() => setSelectedSubcategory('all')}
+              className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${selectedSubcategory === 'all' ? 'bg-brand-600 text-white' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'}`}
+           >
+              Todos
+           </button>
+           {CATEGORIES.find(c => c.id === selectedCategory)?.subcategories?.map(sub => {
+              const isActive = selectedSubcategory === sub;
+              return (
+                <button 
+                  key={sub} 
+                  onClick={() => setSelectedSubcategory(sub)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${isActive ? 'bg-brand-600 text-white' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'}`}
+                >
+                  {sub}
+                </button>
+              );
+           })}
         </div>
       )}
 
@@ -1569,11 +1608,58 @@ const App = () => {
         </div>
       )}
 
+      {/* NEW SECTION: New Arrivals (Recién Unidos) */}
+      {selectedCategory === 'all' && !searchQuery && (
+        <div className="mt-4">
+          <div className="px-4 flex justify-between items-end mb-3">
+             <div className="flex items-center gap-2">
+                <div className="bg-purple-100 dark:bg-purple-900/30 p-1 rounded-md">
+                   <Sparkles size={14} className="text-purple-600 dark:text-purple-400"/>
+                </div>
+                <h2 className="font-bold text-gray-800 dark:text-white text-lg">Recién unidos</h2>
+             </div>
+          </div>
+          <div className="flex gap-4 overflow-x-auto no-scrollbar px-4 pb-4 snap-x">
+            {newProviders.map(provider => (
+               <div key={`new-${provider.id}`} className="snap-start flex-shrink-0 w-64">
+                 <ProviderCard provider={provider} onClick={() => handleProviderClick(provider)} />
+               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* NEW SECTION: Verified Providers (Héroes Verificados) */}
+      {selectedCategory === 'all' && !searchQuery && (
+        <div className="mt-4">
+          <div className="px-4 flex justify-between items-end mb-3">
+             <div className="flex items-center gap-2">
+                <div className="bg-green-100 dark:bg-green-900/30 p-1 rounded-md">
+                   <BadgeCheck size={14} className="text-green-600 dark:text-green-400"/>
+                </div>
+                <h2 className="font-bold text-gray-800 dark:text-white text-lg">Héroes Verificados</h2>
+             </div>
+          </div>
+          <div className="flex gap-4 overflow-x-auto no-scrollbar px-4 pb-4 snap-x">
+            {verifiedProviders.map(provider => (
+               <div key={`verified-${provider.id}`} className="snap-start flex-shrink-0 w-64">
+                 <ProviderCard provider={provider} onClick={() => handleProviderClick(provider)} />
+               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Main List (Filtered or Recommended) */}
       <div className="mt-6 px-4">
         <div className="flex justify-between items-end mb-4">
           <h2 className="font-bold text-gray-800 dark:text-white text-lg">
-            {selectedCategory === 'all' ? 'Todos los profesionales' : `Servicios de ${CATEGORIES.find(c => c.id === selectedCategory)?.name}`}
+            {selectedCategory === 'all' 
+               ? 'Todos los profesionales' 
+               : selectedSubcategory !== 'all' 
+                 ? `${selectedSubcategory}`
+                 : `Servicios de ${CATEGORIES.find(c => c.id === selectedCategory)?.name}`
+            }
           </h2>
         </div>
         
@@ -1638,7 +1724,7 @@ const App = () => {
                  {CATEGORIES.filter(c => c.id !== 'all').map(cat => {
                    const Icon = (Icons as any)[cat.icon] || Icons.Circle;
                    return (
-                     <div key={cat.id} onClick={() => {setSelectedCategory(cat.id); setCurrentTab('home');}} className={`${cat.color.replace('text-', 'bg-opacity-20 ')} rounded-xl p-4 flex items-center justify-between cursor-pointer active:scale-95 transition-transform`}>
+                     <div key={cat.id} onClick={() => {handleCategorySelect(cat.id);}} className={`${cat.color.replace('text-', 'bg-opacity-20 ')} rounded-xl p-4 flex items-center justify-between cursor-pointer active:scale-95 transition-transform`}>
                         <span className="font-semibold text-gray-800 text-sm">{cat.name}</span>
                         <div className={`p-2 bg-white rounded-lg shadow-sm ${cat.color.split(' ')[1]}`}>
                            <Icon size={18} />
