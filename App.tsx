@@ -7,7 +7,7 @@ import { BottomNav } from './components/BottonNav';
 import { ProviderCard } from './components/ProviderCard';
 import { AIChat } from './components/AIChat';
 import * as Icons from 'lucide-react';
-// import { HeroApi } from './services/heroApi'; // Uncomment to use real backend
+import { HeroApi } from './services/heroApi'; // Real backend API
 
 const App = () => {
   // Splash Screen State
@@ -285,36 +285,72 @@ const App = () => {
       setIsProviderMode(true);
   };
 
-  const handleProviderSubmit = () => {
+  const handleProviderSubmit = async () => {
       setIsProviderLoading(true);
-      setTimeout(() => {
-          setIsProviderLoading(false);
-          setProviderSuccess(true);
-          
-          // Create the new provider object
-          const newBusiness: Provider = {
-              id: Date.now().toString(),
+      
+      try {
+          // Prepare provider data for API
+          const providerData = {
               name: regData.name,
               categoryId: regData.categoryId,
-              rating: 0,
-              reviewCount: 0,
-              imageUrl: 'https://picsum.photos/400/300?random=' + Date.now(),
-              distance: '0 km',
-              availability: 'Disponible',
               description: regData.description,
-              verified: false,
               phoneNumber: regData.phoneNumber,
               location: regData.location,
-              services: regServices,
-              employees: regEmployees,
-              schedule: regSchedule,
-              coordinates: regData.coordinates
+              coordinates: regData.coordinates,
+              imageUrl: 'https://picsum.photos/400/300?random=' + Date.now(),
+              verified: false
           };
 
-          // Add to my businesses
-          setMyBusinesses(prev => [...prev, newBusiness]);
+          // Register provider in backend
+          console.log('Registering provider:', providerData);
+          const newProvider = await HeroApi.registerProvider(providerData);
+          
+          if (newProvider && newProvider.id) {
+              console.log('Provider created with ID:', newProvider.id);
+              
+              // Add services to the new provider
+              for (const service of regServices) {
+                  const serviceData = {
+                      name: service.name,
+                      description: service.name,
+                      price: service.price,  // Cambiado de basePrice a price
+                      duration: parseInt(service.duration) || 60,
+                      categoryId: regData.categoryId,
+                      isActive: true
+                  };
+                  
+                  console.log('Creating service for provider ID:', newProvider.id, 'with data:', serviceData);
+                  await HeroApi.createProviderService(newProvider.id, serviceData);
+              }
 
-      }, 1500);
+              // Add employees to the new provider
+              for (const employee of regEmployees) {
+                  const employeeData = {
+                      name: employee.name,
+                      role: employee.role,
+                      phoneNumber: '',
+                      email: ''
+                  };
+                  
+                  console.log('Creating employee for provider ID:', newProvider.id, 'with data:', employeeData);
+                  await HeroApi.createProviderEmployee(newProvider.id, employeeData);
+              }
+
+              // Add to local state
+              setMyBusinesses(prev => [...prev, newProvider]);
+              setProviderSuccess(true);
+              
+              console.log('Provider created successfully:', newProvider);
+          } else {
+              throw new Error('Failed to create provider - no provider returned or no ID assigned');
+          }
+          
+      } catch (error) {
+          console.error('Error creating provider:', error);
+          alert('Error al crear el negocio. Por favor intenta de nuevo.');
+      } finally {
+          setIsProviderLoading(false);
+      }
   };
   
   // Provider Wizard Helpers
